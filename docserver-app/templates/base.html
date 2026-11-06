@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}DocServer{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+</head>
+<body>
+  <nav class="topnav">
+    <a class="brand" href="/">📚 DocServer</a>
+    <div class="navlinks">
+      <a href="/" {% if request.url.path == "/" %}class="active"{% endif %}>Übersicht</a>
+      <a href="/search" {% if request.url.path == "/search" %}class="active"{% endif %}>Suche</a>
+      <a href="/setup" {% if request.url.path == "/setup" %}class="active"{% endif %}>Setup</a>
+      {% if auth_enabled %}<a href="/logout" class="muted">Abmelden</a>{% endif %}
+    </div>
+  </nav>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer>DocServer · lokale Context7-Alternative · läuft vollständig in deinem Netz</footer>
+</body>
+</html>

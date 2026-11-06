@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Laufzeitdaten (SQLite-DB, Uploads)
+docserver-app/data/*
+!docserver-app/data/.gitkeep
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Build/Debug
+*.log
+bash -x.txt

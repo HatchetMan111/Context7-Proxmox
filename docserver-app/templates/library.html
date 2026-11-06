@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ lib['name'] }} · DocServer{% endblock %}
+{% block content %}
+<div class="header-row">
+  <h1>📚 {{ lib['name'] }}</h1>
+  <form method="post" action="/library/{{ lib['id'] }}/sync" class="inline">
+    <button class="btn">🔄 Alles synchronisieren</button>
+  </form>
+</div>
+{% if lib['description'] %}<p class="muted">{{ lib['description'] }}</p>{% endif %}
+<p class="pill">{{ chunks }} Chunks aus {{ sources|length }} Quellen</p>
+
+<div class="card">
+  <h2>Quelle hinzufügen</h2>
+  <form method="post" action="/library/{{ lib['id'] }}/sources" class="stack-form">
+    <label for="url">Doku-URL(en) – eine pro Zeile, oder eine <code>sitemap.xml</code></label>
+    <textarea name="url" id="url" rows="3"
+      placeholder="https://docs.example.com/guide&#10;https://docs.example.com/sitemap.xml"></textarea>
+    <button type="submit">⬇ Herunterladen &amp; indexieren</button>
+  </form>
+  <form method="post" action="/library/{{ lib['id'] }}/upload" enctype="multipart/form-data" class="row-form">
+    <input type="file" name="file" accept=".md,.txt,.html,.rst,.json" required>
+    <button type="submit">📄 Datei hochladen</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Quellen</h2>
+  {% if sources %}
+  <table>
+    <thead><tr><th>Typ</th><th>Ort</th><th>Status</th><th>Chunks</th><th>Letzter Sync</th><th></th></tr></thead>
+    <tbody>
+    {% for src in sources %}
+      <tr>
+        <td><span class="tag">{{ src['type'] }}</span></td>
+        <td class="mono ellipsis" title="{{ src['location'] }}">
+          {% if src['url'] %}<a href="{{ src['location'] }}" target="_blank" rel="noopener">{{ src['location'] }}</a>
+          {% else %}{{ src['location'] }}{% endif %}
+        </td>
+        <td>
+          {% if src['status'] == 'ok' %}<span class="status ok">✓ ok</span>
+          {% elif src['status'] == 'syncing' %}<span class="status sync">⟳ syncing</span>
+          {% elif src['status'] == 'error' %}<span class="status err" title="{{ src['error'] }}">✗ Fehler</span>
+          {% else %}<span class="status">… {{ src['status'] }}</span>{% endif %}
+        </td>
+        <td>{{ src['pages'] }}</td>
+        <td class="muted">{{ src['last_sync'] or 'nie' }}</td>
+        <td class="actions">
+          <form method="post" action="/sources/{{ src['id'] }}/sync" class="inline">
+            <button class="btn small">Sync</button>
+          </form>
+          <form method="post" action="/sources/{{ src['id'] }}/delete" class="inline">
+            <button class="btn small danger">🗑</button>
+          </form>
+        </td>
+      </tr>
+      {% if src['status'] == 'error' and src['error'] %}
+      <tr class="error-row"><td colspan="6"><pre class="error-detail">{{ src['error'][:500] }}</pre></td></tr>
+      {% endif %}
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">Noch keine Quellen vorhanden.</p>
+  {% endif %}
+</div>
+
+<p><a class="btn" href="/search?library={{ lib['id'] }}">🔍 In dieser Library suchen</a></p>
+{% endblock %}

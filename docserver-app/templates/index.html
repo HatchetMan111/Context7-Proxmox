@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Übersicht · DocServer{% endblock %}
+{% block content %}
+<div class="header-row">
+  <h1>📚 Libraries</h1>
+  <span class="pill">{{ libraries|length }} Libraries · {{ total_chunks }} Chunks indexiert</span>
+</div>
+
+<div class="card">
+  <h2>Neue Library anlegen</h2>
+  <form method="post" action="/libraries" class="row-form">
+    <input type="text" name="name" placeholder="Name, z. B. fastapi" required>
+    <input type="text" name="description" placeholder="Beschreibung (optional)">
+    <button type="submit">＋ Anlegen</button>
+  </form>
+</div>
+
+{% if libraries %}
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Beschreibung</th><th>Quellen</th><th>Chunks</th><th>Letzter Sync</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for lib in libraries %}
+      <tr>
+        <td><a href="/library/{{ lib['id'] }}" class="lib-name">{{ lib['name'] }}</a></td>
+        <td class="muted">{{ lib['description'] or '–' }}</td>
+        <td>{{ lib['sources_ok'] }}/{{ lib['sources_total'] }}</td>
+        <td>{{ lib['chunks'] }}</td>
+        <td class="muted">{{ lib['last_sync'] or 'nie' }}</td>
+        <td class="actions">
+          <a class="btn small" href="/library/{{ lib['id'] }}">Verwalten</a>
+          <form method="post" action="/libraries/{{ lib['id'] }}/delete" class="inline"
+                onsubmit="return confirm('Library {{ lib['name'] }} wirklich löschen?')">
+            <button class="btn small danger">🗑</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty">
+  <p>Noch keine Libraries angelegt. Lege oben eine an und füge dann
+     Dokumentations-URLs (einzeln oder als <code>sitemap.xml</code>) hinzu.</p>
+</div>
+{% endif %}
+{% endblock %}
