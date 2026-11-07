@@ -54,16 +54,16 @@ bash /tmp/context7.sh --id 150 --memory 2048 --ip 192.168.178.60/24 --gateway 19
 | `--ip IP/NET` + `--gateway IP` | statische IP (Standard: DHCP) |
 | `--password PW` | Container-Root-Passwort (Standard: `context7`) |
 | `--port PORT` | MCP-Port (Standard: `8080`) |
-| `--api-key KEY` | Context7-API-Key – **erforderlich** (v4.x), kostenlos auf context7.com/dashboard |
+| `--api-key KEY` | Context7-API-Key – optional (anonymer Modus ohne Key, gedrosselt) |
 
-## 🔑 API-Key (erforderlich)
+## 🔑 API-Key (optional)
 
-Context7 **v4.x verlangt zwingend einen API-Key** – ohne Key antwortet der
-Server mit `HTTP 401`. Einen kostenlosen Key gibt es auf
-[context7.com/dashboard](https://context7.com/dashboard).
-
-Direkt bei der Installation mitgeben: `--api-key DEIN_KEY` –
-oder nachträglich eintragen:
+Der Server läuft **ohne Key** im anonymen Modus
+(`MCP_AUTH_ENFORCEMENT=observe` in `/opt/context7/config.env`) – von Upstash
+jedoch gedrosselt. Für höhere Limits einen kostenlosen Key auf
+[context7.com/dashboard](https://context7.com/dashboard) holen und entweder
+bei der Installation mitgeben (`--api-key DEIN_KEY`) oder nachträglich
+eintragen:
 
 ```bash
 pct enter <CT-ID>

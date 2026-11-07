@@ -93,9 +93,9 @@ Installations-Optionen:
   --password PW      Container-Root-Passwort (Standard: ${CT_PASSWORD})
   --template DATEI   vzdump-Template (Standard: automatisch Debian 12)
   --port PORT        MCP-Port im Container (Standard: ${APP_PORT})
-  --api-key KEY      Context7-API-Key (PFLICHT seit v4.x, kostenlos:
-                     https://context7.com/dashboard;
-                     auch nachträglich in /opt/context7/config.env setzbar)
+  --api-key KEY      Context7-API-Key (optional – für höhere Limits;
+                     ohne Key läuft der Server anonym per
+                     MCP_AUTH_ENFORCEMENT=observe; Key: context7.com/dashboard)
 
 Aktionen:
   --update           MCP-Server-Paket aktualisieren (npm latest) + Neustart
@@ -255,6 +255,7 @@ configure_service() {
   cat > "$env_src" <<EOF
 PORT=${APP_PORT}
 CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
+MCP_AUTH_ENFORCEMENT=observe
 EOF
   pct push "$CT_ID" "$env_src" "${APP_DIR}/config.env" >/dev/null
 
@@ -269,15 +270,12 @@ EOF
   ok "systemd-Dienst aktiviert (Restart=always, After=network-online.target)"
 }
 
-# Echte MCP-Handshake-Sonde: JSON-RPC initialize gegen /mcp
+# Echte MCP-Handshake-Sonde: JSON-RPC initialize gegen /mcp (anonym)
 mcp_probe() {  # mcp_probe  (läuft im Container-Kontext)
-  local auth=()
-  [[ -n "${CONTEXT7_API_KEY}" ]] && auth=(-H "Authorization: Bearer ${CONTEXT7_API_KEY}")
   pct exec "$CT_ID" -- curl -s --max-time 5 -o /dev/null -w '%{http_code}' \
     -X POST "http://localhost:${APP_PORT}/mcp" \
     -H 'Content-Type: application/json' \
     -H 'Accept: application/json, text/event-stream' \
-    ${auth[@]+"${auth[@]}"} \
     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"install-probe","version":"1.0"}}}' || echo "000"
 }
 
@@ -292,7 +290,7 @@ verify_installation() {
   ok "Dienst läuft (systemctl is-active: active)"
 
   local tries=0 code=""
-  info "Prüfe MCP-Endpunkt (JSON-RPC initialize) …"
+  info "Prüfe MCP-Endpunkt (JSON-RPC initialize, anonym) …"
   until [[ "${code}" =~ ^2|^4[0-9][0-9]$ ]]; do
     code=$(mcp_probe)
     tries=$(( tries + 1 ))
@@ -302,16 +300,19 @@ verify_installation() {
     }
     [[ "${code}" =~ ^2 ]] || sleep 1.5
   done
-  ok "MCP-Endpunkt antwortet (HTTP ${code} auf /mcp)"
-
-  if [[ -z "${CONTEXT7_API_KEY}" ]] || [[ "${code}" != 2* ]]; then
-    warn "Context7 v4.x benötigt zwingend einen API-Key (ohne Key: HTTP 401)."
-    warn "1) Kostenlosen Key erstellen: https://context7.com/dashboard"
-    warn "2) Eintragen:  pct enter ${CT_ID}  →  nano ${APP_DIR}/config.env"
-    warn "   (CONTEXT7_API_KEY=... )  →  systemctl restart ${SERVICE_NAME}"
-    warn "   oder bei Installation:  --api-key DEIN_KEY"
+  if [[ "${code}" == 2* ]]; then
+    ok "MCP-Endpunkt antwortet (HTTP ${code} auf /mcp) – anonymer Betrieb aktiv."
   else
-    ok "API-Key gesetzt (Bearer-Auth gegen /mcp aktiv)."
+    warn "MCP-Endpunkt liefert HTTP ${code}."
+    warn "Abhilfe: ${APP_DIR}/config.env → MCP_AUTH_ENFORCEMENT=observe setzen"
+    warn "oder API-Key konfigurieren, dann: systemctl restart ${SERVICE_NAME}"
+  fi
+
+  if [[ -n "${CONTEXT7_API_KEY}" ]]; then
+    ok "API-Key gesetzt (höhere Upstash-Limits)."
+  else
+    info "Ohne API-Key: anonymer Betrieb (MCP_AUTH_ENFORCEMENT=observe),"
+    info "von Upstash gedrosselt. Key (kostenlos): https://context7.com/dashboard"
   fi
 }
 
@@ -333,14 +334,15 @@ print_summary() {
   echo -e "  Container      : CT ${CT_ID} (${CT_HOSTNAME}, onboot)"
   echo -e "  MCP-Endpunkt   : ${C_BOLD}http://${ct_ip}:${APP_PORT}/mcp${C_RESET}"
   [[ -n "${CONTEXT7_API_KEY}" ]] \
-    && echo -e "  API-Key        : gesetzt" \
-    || echo -e "  API-Key        : ${C_RED}FEHLT – Clients erhalten HTTP 401!${C_RESET}"
+    && echo -e "  API-Key        : gesetzt (höhere Limits)" \
+    || echo -e "  API-Key        : nicht gesetzt (anonymer Modus – funktioniert, gedrosselt)"
   echo -e ""
   echo -e "  Client-Config (mcpServers-JSON):"
   echo -e "  {"
   echo -e "    \"mcpServers\": {"
-  echo -e "      \"context7\": { \"url\": \"http://${ct_ip}:${APP_PORT}/mcp\","
-  echo -e "        \"headers\": { \"Authorization\": \"Bearer ${CONTEXT7_API_KEY:-DEIN_CONTEXT7_KEY}\" }"
+  echo -e "      \"context7\": { \"url\": \"http://${ct_ip}:${APP_PORT}/mcp\""
+  [[ -n "${CONTEXT7_API_KEY}" ]] && \
+    echo -e "        , \"headers\": { \"Authorization\": \"Bearer ${CONTEXT7_API_KEY}\" }"
   echo -e "      }"
   echo -e "    }"
   echo -e "  }"
