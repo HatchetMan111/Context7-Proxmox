@@ -1,0 +1,14 @@
+[Unit]
+Description=Context7 MCP-Server (Upstash, HTTP-Transport)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/opt/context7/config.env
+ExecStart=/opt/context7/node_modules/.bin/context7-mcp --transport http --port ${PORT}
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
