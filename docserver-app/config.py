@@ -17,4 +17,4 @@ PORT = int(os.environ.get("PORT", "8080"))
 # Crawler-Limits
 MAX_PAGES_PER_SOURCE = int(os.environ.get("MAX_PAGES", "50"))
 FETCH_TIMEOUT = 20.0
-USER_AGENT = "DocServer/1.0 (lokaler Dokumentationsindex; +https://github.com/HatchetMan111/proxmox-docserver)"
+USER_AGENT = "DocServer/1.0 (lokaler Dokumentationsindex; +https://github.com/HatchetMan111/Context7-Proxmox)"

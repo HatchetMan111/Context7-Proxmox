@@ -13,7 +13,7 @@ Kein Cloud-Dienst, keine API-Kosten – alles läuft in einem LXC-Container auf 
 ## 🚀 Installation (Einzeiler auf dem Proxmox-Host)
 
 ```bash
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/proxmox-docserver/main/install/docserver.sh)"
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/Context7-Proxmox/main/install/docserver.sh)"
 ```
 
 Das Script:
@@ -47,7 +47,7 @@ bash docserver.sh --id 150 --cores 2 --memory 2048 --rootfs 8 \
 
 ```bash
 # Update der App in bestehendem Container
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/proxmox-docserver/main/install/docserver.sh)" -- --update --id <CT-ID>
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/Context7-Proxmox/main/install/docserver.sh)" -- --update --id <CT-ID>
 
 # Status
 … -- --status --id <CT-ID>

@@ -6,7 +6,7 @@
 #  Endpunkt und richtet einen systemd-Dienst ein (reboot-sicher).
 #
 #  Einzeiler (auf dem Proxmox-Host):
-#    bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/proxmox-docserver/main/install/docserver.sh)"
+#    bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/Context7-Proxmox/main/install/docserver.sh)"
 #
 #  Optionen:   bash docserver.sh --help
 #  Update:     bash docserver.sh --update
@@ -17,7 +17,7 @@
 set -Eeuo pipefail
 
 # ───────────────────────────── Variablen ───────────────────────────────────
-REPO_RAW="https://raw.githubusercontent.com/HatchetMan111/proxmox-docserver/main"
+REPO_RAW="https://raw.githubusercontent.com/HatchetMan111/Context7-Proxmox/main"
 APP_NAME="docserver"
 SERVICE_NAME="docserver"
 APP_DIR="/opt/docserver"
