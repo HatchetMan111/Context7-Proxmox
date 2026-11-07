@@ -89,7 +89,7 @@ Universelles `mcpServers`-JSON (ZCode, Cursor, …):
 Claude Desktop → Einstellungen → Connectors → Remote MCP:
 `http://<CT-IP>:8080/mcp` (+ Header `Authorization: Bearer <KEY>`, wenn Key gesetzt).
 
-Die Tools heißen wie gewohnt `resolve-library-id` und `get-library-docs`.
+Die Tools heißen wie gewohnt `resolve-library-id` und `query-docs`.
 
 ## 🛠 Verwaltung
 

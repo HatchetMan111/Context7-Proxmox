@@ -346,7 +346,8 @@ print_summary() {
   echo -e "  }"
   echo -e ""
   echo -e "  Ins Terminal   : pct enter ${CT_ID}"
-  echo -e "  Update später  : ${0} --update --id ${CT_ID}"
+  echo -e "  Update später  : wget -qLO /tmp/context7.sh ${REPO_RAW}/install/context7.sh \\"
+  echo -e "                   && bash /tmp/context7.sh --update --id ${CT_ID}"
   echo -e "${C_GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
 }
 
