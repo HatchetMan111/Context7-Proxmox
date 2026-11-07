@@ -10,6 +10,42 @@ reboot-sicher, mit Einzeiler.
 > **keine Weboberfläche** – der Container stellt den MCP-Endpunkt bereit:
 > `http://<CT-IP>:8080/mcp`
 
+## 🧠 Wie funktioniert Context7?
+
+KI-Modelle kennen Bibliotheken nur bis zu ihrem Trainingsstand – sie erfinden
+deshalb gern APIs, die so nicht (mehr) existieren. Context7 löst das, indem es
+**aktuelle Dokumentation zur Laufzeit** in den Kontext des Agenten einspeist:
+
+1. **Upstash crawlt** laufend offizielle Doku-Seiten und Repos und hält daraus
+   einen sauberen, snippethaltigen Index. (Dieser Crawler/Index ist
+   Upstash' Cloud-Backend und **nicht** Teil dieses Repos.)
+2. Dein KI-Client (ZCode, Cursor, Claude Desktop, …) verbindet sich per **MCP**
+   (Model Context Protocol, Streamable HTTP) mit diesem Container:
+   `http://<CT-IP>:8080/mcp`
+3. Braucht der Agent Doku, ruft er zuerst das Tool **`resolve-library-id`**
+   auf (z. B. mit „react") und erhält passende Context7-Library-IDs wie
+   `/reactjs/react.dev` – inklusive Beschreibung und Benchmark-Score.
+4. Anschließend ruft er **`query-docs`** (Library-ID + Thema) auf und bekommt
+   fokussierte Doku-Abschnitte mit Codebeispielen zurück.
+5. Der Agent schreibt mit dieser frischen Doku korrekten Code, statt APIs zu
+   raten.
+
+```
+KI-Client (ZCode / Cursor / Claude)
+   │   MCP über HTTP (JSON-RPC, Streamable)
+   ▼
+LXC „context7" (dieser Container: Node.js + systemd)
+   │   HTTPS → mcp.context7.com
+   ▼
+Upstash-Cloud (Doku-Index + Crawler)
+```
+
+Der Container ist also eine schlanke MCP-Zugangsstelle im LAN: Er speichert
+**keine Dokumentation lokal**, sondern reicht Anfragen live an Upstash weiter
+(Internetzugang nötig). Ohne API-Key arbeitet er anonym
+(`MCP_AUTH_ENFORCEMENT=observe`, von Upstash gedrosselt); mit Key
+(`--api-key` bzw. `config.env`) gibt es höhere Limits.
+
 ## 🚀 Installation (Einzeiler auf dem Proxmox-Host)
 
 ```bash
