@@ -56,8 +56,8 @@ die()   { err "$*"; exit 1; }
 header(){ echo -e "\n${C_BOLD}━━━ $* ━━━${C_RESET}"; }
 
 # Vollständige Fehlerkette: Zeile + Exit-Code + Debug-Hinweis
-trap 'rc=$?; err "Fehler (Exit-Code $rc) in Zeile $LINENO von $0"; \
-      err "Vollständiges Debug-Log:  bash -x $0 $*"; exit $rc' ERR
+trap 'rc=$?; err "Fehler (Exit-Code $rc) in Zeile $LINENO"; \
+      err "Debug: wget -qLO /tmp/context7.sh ${REPO_RAW}/install/context7.sh && bash -x /tmp/context7.sh"; exit $rc' ERR
 
 cleanup() { [[ -n "${TMP_DIR}" && -d "${TMP_DIR}" ]] && rm -rf "${TMP_DIR}" || true; }
 trap cleanup EXIT
@@ -140,17 +140,22 @@ check_prerequisites() {
   ok "Läuft als root auf Proxmox VE"
 
   if [[ -z "${CT_TEMPLATE}" ]]; then
-    CT_TEMPLATE=$(pveam list local 2>/dev/null | grep -i 'debian-12-standard' | head -1 | awk -F/ '{print $2}')
+    # pveam-Zeile: "local:vztmpl/<datei>   <größe>" → nur den Dateinamen nehmen
+    CT_TEMPLATE=$(pveam list local 2>/dev/null | grep -i 'debian-12-standard' | head -1 \
+                  | awk '{print $1}' | awk -F/ '{print $NF}')
     if [[ -z "${CT_TEMPLATE}" ]]; then
       info "Kein Debian-12-Template vorhanden – lade herunter …"
       pveam update >/dev/null
       pveam download local debian-12-standard_12.12-1_amd64.tar.zst
       CT_TEMPLATE="debian-12-standard_12.12-1_amd64.tar.zst"
     fi
-    ok "Template: ${CT_TEMPLATE}"
   else
-    ok "Template (per Option): ${CT_TEMPLATE}"
+    CT_TEMPLATE=$(basename "${CT_TEMPLATE}")
   fi
+  if [[ ! "${CT_TEMPLATE}" =~ ^[A-Za-z0-9._-]+$ ]]; then
+    die "Ungültiger Template-Name: '${CT_TEMPLATE}' – bitte --template <datei> angeben."
+  fi
+  ok "Template: ${CT_TEMPLATE}"
 }
 
 next_free_id() {

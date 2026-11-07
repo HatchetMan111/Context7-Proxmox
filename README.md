@@ -26,9 +26,23 @@ Das Script:
 
 ### Optionen
 
+Mit Optionen (z. B. API-Key) am einfachsten in zwei Schritten:
+
 ```bash
-bash context7.sh --id 150 --memory 2048 --ip 192.168.178.60/24 --gateway 192.168.178.1 \
-     --api-key DEIN_CONTEXT7_KEY
+wget -qLO /tmp/context7.sh https://raw.githubusercontent.com/HatchetMan111/Context7-Proxmox/main/install/context7.sh
+bash /tmp/context7.sh --api-key DEIN_CONTEXT7_KEY
+```
+
+oder direkt (Einzeiler mit Argumenten):
+
+```bash
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/HatchetMan111/Context7-Proxmox/main/install/context7.sh)" installer --api-key DEIN_CONTEXT7_KEY
+```
+
+Weitere Optionen:
+
+```bash
+bash /tmp/context7.sh --id 150 --memory 2048 --ip 192.168.178.60/24 --gateway 192.168.178.1
 ```
 
 | Option | Beschreibung |
